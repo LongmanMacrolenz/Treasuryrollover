@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>미국 국채 전략적 롤오버 & 연준 유동성 메커니즘 분석 | 매크로렌즈</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #C4A35A;
+    --gold-light: #e0c07a;
+    --red: #C0392B;
+    --ink: #0a0a0a;
+    --ink-mid: #141414;
+    --line: rgba(196,163,90,.18);
+    --text: #e8e0d0;
+    --text-dim: rgba(232,224,208,.55);
+    --text-muted: rgba(232,224,208,.35);
+    --green: #27ae60;
+    --blue: #2980b9;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--ink); color:var(--text); font-family:'Noto Sans KR',sans-serif; font-size:15px; line-height:1.75; -webkit-font-smoothing:antialiased; }
+
+  /* ── HEADER ── */
+  header { position:relative; padding:64px 40px 52px; border-bottom:1px solid var(--line); overflow:hidden; }
+  header::before { content:''; position:absolute; inset:0;
+    background: radial-gradient(ellipse at 100% 0%, rgba(196,163,90,.10) 0%, transparent 55%),
+                radial-gradient(ellipse at 0% 100%, rgba(41,128,185,.07) 0%, transparent 50%); }
+  .header-inner { max-width:960px; margin:0 auto; position:relative; }
+  .brand-row { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
+  .brand-dot { width:6px; height:6px; border-radius:50%; background:var(--gold); }
+  .brand-name { font-size:11px; font-weight:500; letter-spacing:3px; color:var(--gold); text-transform:uppercase; font-family:'DM Mono',monospace; }
+  .conf-badge { margin-left:auto; background:rgba(192,57,43,.15); border:1px solid rgba(192,57,43,.4); border-radius:20px; padding:3px 12px; font-size:10px; color:#ff8a7a; font-family:'DM Mono',monospace; letter-spacing:1px; }
+  h1 { font-family:'Noto Serif KR',serif; font-size:clamp(24px,3.8vw,40px); font-weight:900; line-height:1.2; letter-spacing:-1px; color:#fff; margin-bottom:10px; }
+  h1 em { color:var(--gold); font-style:normal; }
+  .header-sub { font-size:13px; color:var(--text-muted); font-family:'DM Mono',monospace; margin-bottom:28px; line-height:1.8; }
+  .header-sub span { color:var(--text-dim); }
+
+  /* ── SNAPSHOT ── */
+  .snapshot { background:var(--ink-mid); border-bottom:1px solid var(--line); padding:0 40px; }
+  .snapshot-inner { max-width:960px; margin:0 auto; display:flex; flex-wrap:wrap; gap:0; }
+  .snap-item { padding:16px 24px 16px 0; border-right:1px solid var(--line); flex-shrink:0; min-width:160px; }
+  .snap-item:last-child { border-right:none; }
+  .snap-label { font-size:10px; color:var(--text-muted); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:5px; font-family:'DM Mono',monospace; }
+  .snap-val { font-size:18px; font-weight:700; font-family:'DM Mono',monospace; }
+  .snap-val.gold { color:var(--gold); }
+  .snap-val.red  { color:#ff8a7a; }
+  .snap-val.green{ color:#6ed99a; }
+  .snap-val.blue { color:#7ec8f0; }
+  .snap-sub { font-size:10px; margin-top:3px; color:var(--text-muted); font-family:'DM Mono',monospace; }
+
+  /* ── NAV ── */
+  nav { background:var(--ink-mid); border-bottom:1px solid var(--line); position:sticky; top:0; z-index:100; }
+  .nav-inner { max-width:960px; margin:0 auto; display:flex; gap:2px; padding:0 40px; overflow-x:auto; }
+  .nav-tab { color:var(--text-muted); font-size:12px; font-weight:500; padding:13px 14px; cursor:pointer; border:none; background:none; white-space:nowrap; text-decoration:none; display:inline-block; transition:color .2s; letter-spacing:.3px; }
+  .nav-tab:hover { color:var(--text); }
+  .nav-tab.active { color:var(--gold); border-bottom:2px solid var(--gold); }
+
+  /* ── MAIN ── */
+  main { max-width:960px; margin:0 auto; padding:0 40px 80px; }
+  .section { margin-top:56px; }
+  .section-header { display:flex; align-items:flex-start; gap:18px; margin-bottom:24px; padding-bottom:18px; border-bottom:1px solid var(--line); }
+  .section-num { font-family:'DM Mono',monospace; font-size:11px; color:var(--gold); font-weight:500; letter-spacing:1px; padding-top:4px; flex-shrink:0; opacity:.7; }
+  .section-title { font-family:'Noto Serif KR',serif; font-size:clamp(17px,2.2vw,21px); font-weight:700; color:#fff; line-height:1.35; }
+  .section-title small { display:block; font-family:'Noto Sans KR',sans-serif; font-size:12px; color:var(--text-muted); font-weight:400; margin-top:4px; }
+
+  .prose { color:var(--text-dim); line-height:1.95; font-size:14.5px; }
+  .prose+.prose { margin-top:12px; }
+  .prose strong { color:var(--text); font-weight:600; }
+  .prose em { color:var(--gold-light); font-style:normal; }
+
+  /* ── FORMULA BOX ── */
+  .formula-box { background:#0d0d0d; border:1px solid rgba(196,163,90,.3); border-radius:4px; padding:20px 28px; margin:20px 0; text-align:center; }
+  .formula-text { font-family:'DM Mono',monospace; font-size:16px; color:var(--gold-light); letter-spacing:1px; }
+
+  /* ── ALERT ── */
+  .alert { margin:16px 0; padding:16px 20px; border-radius:4px; display:flex; gap:14px; align-items:flex-start; font-size:13.5px; line-height:1.75; }
+  .alert.gold  { background:rgba(196,163,90,.08); border-left:3px solid var(--gold); color:#e0c07a; }
+  .alert.blue  { background:rgba(41,128,185,.10); border-left:3px solid var(--blue); color:#a8d4f0; }
+  .alert.red   { background:rgba(192,57,43,.10); border-left:3px solid var(--red); color:#ffb3a7; }
+  .alert.green { background:rgba(39,174,96,.10); border-left:3px solid var(--green); color:#a8e0bc; }
+  .alert-icon  { font-size:18px; flex-shrink:0; }
+  .alert strong { color:inherit; font-weight:700; }
+
+  /* ── DATA TABLE ── */
+  .data-table { width:100%; border-collapse:collapse; font-size:13px; margin:18px 0; }
+  .data-table thead tr { border-bottom:2px solid var(--line); }
+  .data-table thead th { padding:10px 12px; text-align:left; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-muted); font-family:'DM Mono',monospace; font-weight:500; }
+  .data-table tbody tr { border-bottom:1px solid rgba(196,163,90,.07); transition:background .15s; }
+  .data-table tbody tr:hover { background:rgba(196,163,90,.04); }
+  .data-table tbody tr.highlight { background:rgba(196,163,90,.06); }
+  .data-table tbody td { padding:11px 12px; vertical-align:top; color:var(--text-dim); }
+  .data-table tbody td:first-child { color:var(--text); font-weight:600; font-size:12.5px; }
+  .tag { display:inline-block; padding:2px 8px; border-radius:3px; font-size:11px; font-weight:600; font-family:'DM Mono',monospace; }
+  .tag-red   { background:rgba(192,57,43,.2); color:#ff8a7a; }
+  .tag-gold  { background:rgba(196,163,90,.15); color:var(--gold); }
+  .tag-blue  { background:rgba(41,128,185,.15); color:#7ec8f0; }
+  .tag-green { background:rgba(39,174,96,.15); color:#6ed99a; }
+  .tag-gray  { background:rgba(255,255,255,.06); color:var(--text-muted); }
+
+  /* ── TIMELINE ── */
+  .timeline { position:relative; padding-left:32px; margin-top:8px; }
+  .timeline::before { content:''; position:absolute; left:8px; top:0; bottom:0; width:2px; background:linear-gradient(to bottom, var(--gold), rgba(196,163,90,.1)); }
+  .tl-item { position:relative; margin-bottom:28px; }
+  .tl-dot { position:absolute; left:-28px; top:5px; width:14px; height:14px; border-radius:50%; background:var(--ink); border:2px solid var(--gold); box-shadow:0 0 8px rgba(196,163,90,.3); }
+  .tl-dot.key { background:var(--red); border-color:var(--red); box-shadow:0 0 10px rgba(192,57,43,.4); }
+  .tl-dot.gold { background:var(--gold); }
+  .tl-era  { font-family:'DM Mono',monospace; font-size:11px; color:var(--gold); font-weight:500; letter-spacing:1px; margin-bottom:5px; opacity:.8; }
+  .tl-title { font-weight:700; color:#fff; font-size:14.5px; margin-bottom:5px; line-height:1.4; }
+  .tl-body  { font-size:13px; color:var(--text-dim); line-height:1.85; }
+  .tl-body strong { color:var(--text); }
+
+  /* ── STEP CARDS ── */
+  .step-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin:20px 0; }
+  .step-card { background:var(--ink-mid); border:1px solid var(--line); border-radius:4px; padding:18px 20px; position:relative; overflow:hidden; }
+  .step-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
+  .step-card.inactive::before { background:rgba(255,255,255,.08); }
+  .step-card.active::before  { background:var(--gold); }
+  .step-card.upcoming::before{ background:var(--blue); }
+  .step-num  { font-family:'DM Mono',monospace; font-size:28px; font-weight:700; color:rgba(196,163,90,.15); line-height:1; margin-bottom:10px; }
+  .step-card.inactive .step-num { color:rgba(255,255,255,.06); }
+  .step-label { font-size:10px; letter-spacing:2px; text-transform:uppercase; font-family:'DM Mono',monospace; margin-bottom:6px; }
+  .step-card.inactive .step-label { color:var(--text-muted); }
+  .step-card.active   .step-label { color:var(--gold); }
+  .step-card.upcoming .step-label { color:#7ec8f0; }
+  .step-title { font-weight:700; color:#fff; font-size:13.5px; margin-bottom:6px; line-height:1.4; }
+  .step-body  { font-size:12.5px; color:var(--text-muted); line-height:1.7; }
+  .step-status { margin-top:10px; }
+
+  /* ── FINAL JUDGEMENT ── */
+  .judgement-box { background:linear-gradient(135deg,#0f0a05,#120808); border:1px solid rgba(196,163,90,.2); border-radius:6px; padding:32px 36px; margin-top:48px; }
+  .judgement-eyebrow { font-size:10px; letter-spacing:3px; color:var(--gold); text-transform:uppercase; font-family:'DM Mono',monospace; margin-bottom:16px; }
+  .judgement-title { font-family:'Noto Serif KR',serif; font-size:20px; font-weight:700; color:#fff; margin-bottom:20px; line-height:1.4; }
+  .judgement-item { display:flex; gap:16px; align-items:flex-start; padding:16px 0; border-bottom:1px solid rgba(196,163,90,.1); }
+  .judgement-item:last-child { border-bottom:none; }
+  .judgement-num { font-family:'DM Mono',monospace; font-size:22px; font-weight:700; color:rgba(196,163,90,.3); flex-shrink:0; width:32px; line-height:1; margin-top:2px; }
+  .judgement-content .j-title { font-weight:700; color:var(--gold-light); font-size:14px; margin-bottom:6px; }
+  .judgement-content .j-body  { font-size:13.5px; color:var(--text-dim); line-height:1.85; }
+  .judgement-content .j-body strong { color:var(--text); }
+
+  /* ── LIMIT TABLE ── */
+  .limit-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:20px 0; }
+  @media(max-width:600px){ .limit-grid { grid-template-columns:1fr; } }
+  .limit-card { background:var(--ink-mid); border:1px solid var(--line); border-radius:4px; padding:18px 20px; }
+  .limit-claim { font-weight:700; color:var(--text); font-size:13.5px; margin-bottom:6px; }
+  .limit-density { display:inline-block; margin-bottom:8px; }
+  .limit-body { font-size:12.5px; color:var(--text-muted); line-height:1.7; }
+
+  /* ── SOURCE LIST ── */
+  .source-list { font-size:12px; color:var(--text-muted); font-family:'DM Mono',monospace; line-height:2; margin-top:12px; }
+
+  /* ── DIVIDER ── */
+  .divider { margin:48px 0 0; border:none; border-top:1px solid var(--line); }
+
+  footer { border-top:1px solid var(--line); padding:28px 40px; font-size:11px; color:var(--text-muted); text-align:center; line-height:1.8; }
+  footer a { color:var(--gold); text-decoration:none; }
+
+  @media(max-width:640px){
+    header { padding:40px 20px 36px; }
+    .snapshot { padding:0 20px; }
+    main { padding:0 20px 60px; }
+    .nav-inner { padding:0 20px; }
+    footer { padding:24px 20px; }
+    .judgement-box { padding:24px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<header>
+  <div class="header-inner">
+    <div class="brand-row">
+      <div class="brand-dot"></div>
+      <span class="brand-name">Macro Lens · 롱맨</span>
+      <span class="conf-badge">STRICTLY CONFIDENTIAL</span>
+    </div>
+    <h1>미국 국채 전략적 롤오버<br><em>& 연준 유동성 메커니즘 분석</em></h1>
+    <div class="header-sub">
+      FISCAL YEAR 2026 &nbsp;·&nbsp; 2026.02.26<br>
+      <span>QE 재개 타임라인 / ON RRP 완전 해부 / 순유동성 국면 진단 / 장기채 롤오버 이자 비용 / 지정학 금리 조작 메커니즘</span><br>
+      <span style="margin-top:6px;display:block;">DATA: H.4.1 Feb 11, 2026 &nbsp;|&nbsp; H.15 Feb 25, 2026 &nbsp;|&nbsp; QRA Feb 4, 2026 &nbsp;|&nbsp; TreasuryDirect</span>
+    </div>
+  </div>
+</header>
+
+<!-- ══ SNAPSHOT ══ -->
+<div class="snapshot">
+  <div class="snapshot-inner">
+    <div class="snap-item">
+      <div class="snap-label">H.4.1 순유동성</div>
+      <div class="snap-val gold">~$5.33T</div>
+      <div class="snap-sub">감소 국면</div>
+    </div>
+    <div class="snap-item">
+      <div class="snap-label">실질 ON RRP (MMF)</div>
+      <div class="snap-val red">~$1.0B</div>
+      <div class="snap-sub">소진</div>
+    </div>
+    <div class="snap-item">
+      <div class="snap-label">외국계 RRP (구조적)</div>
+      <div class="snap-val gold">~$319.6B</div>
+      <div class="snap-sub">유동성 무관</div>
+    </div>
+    <div class="snap-item">
+      <div class="snap-label">TGA 잔액</div>
+      <div class="snap-val gold">~$901B</div>
+      <div class="snap-sub">목표 $850B 초과</div>
+    </div>
+    <div class="snap-item">
+      <div class="snap-label">10yr 금리</div>
+      <div class="snap-val blue">4.05%</div>
+      <div class="snap-sub">2026.2.25</div>
+    </div>
+    <div class="snap-item">
+      <div class="snap-label">FOMC 금리</div>
+      <div class="snap-val gold">3.50~3.75%</div>
+      <div class="snap-sub">동결</div>
+    </div>
+    <div class="snap-item">
+      <div class="snap-label">4주 T-Bill</div>
+      <div class="snap-val gold">3.69%</div>
+      <div class="snap-sub">2026.2.25</div>
+    </div>
+    <div class="snap-item">
+      <div class="snap-label">2년물</div>
+      <div class="snap-val gold">~3.48%</div>
+      <div class="snap-sub">2026.2.25</div>
+    </div>
+    <div class="snap-item">
+      <div class="snap-label">30년물</div>
+      <div class="snap-val gold">4.70%</div>
+      <div class="snap-sub">2026.2.25</div>
+    </div>
+    <div class="snap-item">
+      <div class="snap-label">QT/QE 상태</div>
+      <div class="snap-val green" style="font-size:13px;">★ QT 종료</div>
+      <div class="snap-sub">QE 재개 (2025.12)</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ NAV ══ -->
+<nav>
+  <div class="nav-inner">
+    <a class="nav-tab active" href="#sec1">I. 순유동성</a>
+    <a class="nav-tab" href="#sec2">II. QT→QE 전환</a>
+    <a class="nav-tab" href="#sec3">III. ON RRP 해부</a>
+    <a class="nav-tab" href="#sec4">IV. T-Bill 흡수</a>
+    <a class="nav-tab" href="#sec5">V. 수익률 곡선</a>
+    <a class="nav-tab" href="#sec6">VI. 롤오버 일정</a>
+    <a class="nav-tab" href="#sec7">VII. 이자비용</a>
+    <a class="nav-tab" href="#sec8">VIII. 지정학 타임라인</a>
+    <a class="nav-tab" href="#sec9">IX. 핵심 판단</a>
+    <a class="nav-tab" href="#sec10">한계 & 출처</a>
+  </div>
+</nav>
+
+<!-- ══ MAIN ══ -->
+<main>
+
+  <!-- I -->
+  <div class="section" id="sec1">
+    <div class="section-header">
+      <div class="section-num">I</div>
+      <div class="section-title">
+        핵심 질문 — 지금 유동성은 흐르는가, 줄어드는가?
+        <small>1-1. 순유동성(Net Liquidity) 공식</small>
+      </div>
+    </div>
+
+    <p class="prose">유동성 방향을 판단하는 가장 직접적인 지표는 연준 H.4.1에서 산출하는 순유동성이다.</p>
+
+    <div class="formula-box">
+      <div class="formula-text">순유동성 = 연준 총자산 — TGA (재무일반계정) — RRP (역레포 잔액)</div>
+    </div>
+
+    <p class="prose">순유동성이 증가하면 지준이 늘어 위험자산 선호(Risk-On)가 활성화된다. 반대로 줄어들면 금융시장 전반에 하방 압력이 가해진다. 단, 연준이 어떤 자산을 매입하느냐에 따라 효과가 다르다 — <strong>T-Bill 매입은 지준을 즉각 공급하고, MBS 런오프는 지준을 흡수한다.</strong></p>
+
+    <p class="prose" style="margin-top:20px;font-size:13px;color:var(--text-muted);font-family:'DM Mono',monospace;">1-2. 순유동성 계산 — H.4.1 최신 실데이터</p>
+    <table class="data-table" style="margin-top:10px;">
+      <thead>
+        <tr>
+          <th>항목</th>
+          <th>2026.2.11 (현재)</th>
+          <th>2025.2.12 (1년 전)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>연준 총자산 (A)</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text);">$6,568.8B</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">$6,766.8B</td>
+        </tr>
+        <tr>
+          <td>— TGA (B)</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text);">$915.3B</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">$828.1B</td>
+        </tr>
+        <tr>
+          <td>— RRP 총계 (C)</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text);">$326.8B</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">$466.8B</td>
+        </tr>
+        <tr class="highlight">
+          <td>★ 순유동성 (A-B-C)</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold-light);font-weight:700;">$5,326.7B (~$5.33T)</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">$5,471.9B (~$5.47T)</td>
+        </tr>
+        <tr>
+          <td>1년간 변화</td>
+          <td style="font-family:'DM Mono',monospace;color:#ff8a7a;">▼ -$145.2B (-2.7%)</td>
+          <td style="color:var(--text-muted);">(기준)</td>
+        </tr>
+        <tr>
+          <td>지준잔액</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text);">$2,939.6B (~$2.96T)</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">$3,220.1B</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="prose" style="font-size:11.5px;color:var(--text-muted);">* 출처: H.4.1 Federal Reserve Statistical Release, 2026.2.19 발표 (기준일 2026.2.11). 주간 평균 기준.</p>
+
+    <div class="alert gold" style="margin-top:16px;">
+      <div class="alert-icon">🔑</div>
+      <div><strong>핵심 진단:</strong> 순유동성은 현재 ▼ 완만한 감소 국면에서 QE 재개(2025.12)와 4월 eSLR 완화가 맞물려 방향 반전을 하는 전환 직전의 관찰 구간이다.</div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- II -->
+  <div class="section" id="sec2">
+    <div class="section-header">
+      <div class="section-num">II</div>
+      <div class="section-title">
+        QT 종료 → QE 재개 — 연준 B/S 전환 타임라인
+        <small>2-1. 공식 타임라인</small>
+      </div>
+    </div>
+
+    <p class="prose">2025년 12월, 연준은 양적긴축(QT)을 종료하고 양적완화(QE)를 재개했다. 이 전환은 T-Bill 시장과 단기 유동성 구조를 근본적으로 바꾼다. 이는 연준의 인플레 압력을 줄이기 위한 노력의 일환이었다.</p>
+
+    <div class="timeline" style="margin-top:24px;">
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-era">2022.6~2025.11</div>
+        <div class="tl-title">QT 시행: 국채 $25B + MBS $35B/월 런오프. 총 ~$2.4T 축소.</div>
+        <div class="tl-body">B/S 방향: ▼ 축소 &nbsp;|&nbsp; 유동성 영향: 지준 $3T 이하 접근. 단기자금 경색 발생.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot key"></div>
+        <div class="tl-era">★ 2025.10.29</div>
+        <div class="tl-title">FOMC: QT 종료 선언 + 25bp 인하(→ 3.75~4.00%). Stephen Miran 반대(더 큰 인하 주장).</div>
+        <div class="tl-body">B/S 방향: 전환 선언 &nbsp;|&nbsp; 유동성 영향: 지준 보호 목적. 시장 선제 반응.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot key"></div>
+        <div class="tl-era">★ 2025.12.1</div>
+        <div class="tl-title">QT 공식 종료. MBS 런오프 수익 → T-Bill 재투자 전환.</div>
+        <div class="tl-body">B/S 방향: ▶ 중립 &nbsp;|&nbsp; 유동성 영향: QT 엔진 완전 정지. 자산 안정화 ~$6.54T.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot key"></div>
+        <div class="tl-era">★ 2025.12.10</div>
+        <div class="tl-title">Powell QE 재개 공식 발표 — 월 $40B T-Bill 신규 매입 시작.</div>
+        <div class="tl-body">B/S 방향: ▲ 확장 &nbsp;|&nbsp; 유동성 영향: RMP 가동. 지준 순증 전환 시작.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-era">2026.2.11</div>
+        <div class="tl-title">H.4.1: 연준 T-Bill 보유 $305.3B (수요일 종가). YoY +$102.8B.</div>
+        <div class="tl-body">B/S 방향: ▲ &nbsp;|&nbsp; 유동성 영향: 약 2.5개월치 QE 반영. MBS는 런오프 미재투자.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot gold"></div>
+        <div class="tl-era">★ 2026.4.1 (예정)</div>
+        <div class="tl-title">eSLR 완화 발효. 은행 Tier1 -$219B → T-Bill 레버리지 부담 제거.</div>
+        <div class="tl-body">B/S 방향: ▲ 간접 지원 &nbsp;|&nbsp; 유동성 영향: 흡수 4단계로 확장. $2~3T 여력 추가.</div>
+      </div>
+    </div>
+    <p class="prose" style="font-size:11.5px;color:var(--text-muted);margin-top:8px;">* 출처: KPMG (2025.11.18), SVB AM, Daily Economy (2025.12.16), Brookings (2026.1.8), H.4.1 공식 원문.</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- III -->
+  <div class="section" id="sec3">
+    <div class="section-header">
+      <div class="section-num">III</div>
+      <div class="section-title">
+        ON RRP $326.8B vs $1.0B
+        <small>3-1. RRP 구조 분리</small>
+      </div>
+    </div>
+
+    <p class="prose">H.4.1의 RRP 총계 $326.8B는 두 개의 전혀 다른 성격의 자금으로 구성된다. 이 둘을 구분하지 않으면 유동성 분석이 왜곡된다.</p>
+
+    <table class="data-table" style="margin-top:16px;">
+      <thead>
+        <tr>
+          <th>구분</th>
+          <th>주간 평균</th>
+          <th>수요일 종가</th>
+          <th>비중</th>
+          <th>실질 의미</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>① 외국 공식기관 RRP</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text);">$324.7B</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text);">$319.6B</td>
+          <td><span class="tag tag-gold">99.4%</span></td>
+          <td>외국 중앙은행·국제기구의 달러 준비금. 구조적·고정. 달러 패권 지표. <strong style="color:var(--text);">시중 유동성과 무관.</strong></td>
+        </tr>
+        <tr class="highlight">
+          <td>② MMF 등 Others<br><strong>(실질 ON RRP)</strong></td>
+          <td style="font-family:'DM Mono',monospace;color:#ff8a7a;">$2.1B</td>
+          <td style="font-family:'DM Mono',monospace;color:#ff8a7a;">~$1.0B</td>
+          <td><span class="tag tag-red">0.6%</span></td>
+          <td>MMF·프라이머리 딜러의 단기 자금 주차. 2022년 피크 $2.5T에서 <strong style="color:#ff8a7a;">99.96% 소진.</strong> 유동성 방출 엔진.</td>
+        </tr>
+        <tr>
+          <td>H.4.1 합계</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text);">$326.8B</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text);">$320.7B</td>
+          <td>100%</td>
+          <td>① + ②의 합산. 유동성 분석 시 반드시 분리 필요.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="prose" style="margin-top:20px;font-size:13px;color:var(--text-muted);font-family:'DM Mono',monospace;">3-2. ON RRP 소진의 의미</p>
+    <p class="prose" style="margin-top:10px;">2022년 말 MMF들은 $2.5T를 연준 ON RRP에 주차했다. T-Bill 금리가 ON RRP 금리(3.55%)를 상회하면서 MMF는 ON RRP를 이탈하여 T-Bill을 매수했다. 이 과정이 <em>"RRP 드레인 → 유동성 방출"</em>이다.</p>
+
+    <div class="alert red" style="margin-top:14px;">
+      <div class="alert-icon">🔴</div>
+      <div>
+        실질 ON RRP($1.0B)는 사실상 소진됐다. <strong>"RRP 드레인 → 유동성 방출" 경로는 완전히 닫혔다.</strong><br>
+        외국계 $319.6B는 달러 패권의 구조적 잔액으로 유동성 변수가 아니다.<br>
+        이제 T-Bill 지지의 유일한 능동 엔진은 <strong>연준 QE(월 $40B)</strong>다.
+      </div>
+    </div>
+
+    <p class="prose" style="margin-top:20px;font-size:13px;color:var(--text-muted);font-family:'DM Mono',monospace;">3-3. 유동성 국면 시계열 비교</p>
+    <table class="data-table" style="margin-top:10px;">
+      <thead>
+        <tr><th>시기</th><th>순유동성</th><th>실질 ON RRP</th><th>TGA</th><th>시장 흐름</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>2022.Q1</td>
+          <td style="font-family:'DM Mono',monospace;">$5.8T (피크)</td>
+          <td style="font-family:'DM Mono',monospace;">$1.6T</td>
+          <td style="font-family:'DM Mono',monospace;">$0.6T</td>
+          <td>QT 시작 전. 자산시장 정점.</td>
+        </tr>
+        <tr>
+          <td>2023.Q3</td>
+          <td style="font-family:'DM Mono',monospace;">$5.2T</td>
+          <td style="font-family:'DM Mono',monospace;">$2.5T (피크)</td>
+          <td style="font-family:'DM Mono',monospace;">$0.7T</td>
+          <td>RRP 최대. 금리 급등. Fitch 강등.</td>
+        </tr>
+        <tr>
+          <td>2024.Q1</td>
+          <td style="font-family:'DM Mono',monospace;">$5.4T</td>
+          <td style="font-family:'DM Mono',monospace;">$0.8T</td>
+          <td style="font-family:'DM Mono',monospace;">$0.9T</td>
+          <td>RRP 급락 → 유동성 방출 → 자산 상승.</td>
+        </tr>
+        <tr>
+          <td>2025.Q1</td>
+          <td style="font-family:'DM Mono',monospace;">$5.5T</td>
+          <td style="font-family:'DM Mono',monospace;">$0.47T</td>
+          <td style="font-family:'DM Mono',monospace;">$0.83T</td>
+          <td>BTC·주식 강세. RMP 가동 시작.</td>
+        </tr>
+        <tr class="highlight">
+          <td>★ 2026.Q1 (현재)</td>
+          <td style="font-family:'DM Mono',monospace;color:#ff8a7a;">$5.33T ▼</td>
+          <td style="font-family:'DM Mono',monospace;color:#ff8a7a;">~$1.0B (소진)</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold);">$0.91T ▲</td>
+          <td>실질 ON RRP 소진. QE 전환 초기 단계. RRP 방출 엔진 종료.</td>
+        </tr>
+        <tr>
+          <td>2026.Q2 (예상)</td>
+          <td style="font-family:'DM Mono',monospace;color:#6ed99a;">$5.3~5.5T</td>
+          <td style="font-family:'DM Mono',monospace;">~$1B 이하</td>
+          <td style="font-family:'DM Mono',monospace;">~$0.85T</td>
+          <td>QE 누적 + eSLR 4월 → 방향 반전 가능. 변곡점 관찰 구간.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr class="divider">
+
+  <!-- IV -->
+  <div class="section" id="sec4">
+    <div class="section-header">
+      <div class="section-num">IV</div>
+      <div class="section-title">
+        연준의 T-Bill 흡수 메커니즘 — 3+1 단계 구조
+        <small>4-1. 단기채 금리 고정 원리</small>
+      </div>
+    </div>
+
+    <p class="prose">재무부가 T-Bill을 매주 수백조씩 발행해도 금리가 연준 정책금리 범위 안에서 유지되는 이유가 있다. 연준이 설계한 3단계 + 예정된 1단계가 수요를 안정적으로 공급하기 때문이다.</p>
+
+    <div class="step-grid" style="margin-top:20px;">
+      <div class="step-card inactive">
+        <div class="step-num">①</div>
+        <div class="step-label">ON RRP (소진)</div>
+        <div class="step-title">MMF RRP 금리 하한 제공</div>
+        <div class="step-body">MMF에게 RRP 금리 3.55% 하한 제공 → T-Bill 금리가 RRP보다 높으면 RRP 이탈 → T-Bill 매수.</div>
+        <div class="step-status"><span class="tag tag-gray">$1.0B — 비가동</span></div>
+      </div>
+      <div class="step-card active">
+        <div class="step-num">②</div>
+        <div class="step-label">연준 QE (RMP) ★ 주력</div>
+        <div class="step-title">월 $40B T-Bill 직접 매입</div>
+        <div class="step-body">2025.12.10~ 월 $40B T-Bill 직접 매입 → 지준 공급 + T-Bill 가격 지지. H.4.1에서 T-Bill YoY +$102.8B로 확인.</div>
+        <div class="step-status"><span class="tag tag-gold">$305.3B 보유 +$102.8B YoY ★ 현재 핵심 엔진 가동 중</span></div>
+      </div>
+      <div class="step-card active">
+        <div class="step-num">③</div>
+        <div class="step-label">재무부 QRA 설계</div>
+        <div class="step-title">T-Bill 21.3% 비중 설계</div>
+        <div class="step-body">T-Bill 비중을 총 부채의 21.3%로 설계. 수요가 확실한 단기 구간에 발행 집중.</div>
+        <div class="step-status"><span class="tag tag-gold">$6.6T (21.3%) 가동 중</span></div>
+      </div>
+      <div class="step-card upcoming">
+        <div class="step-num">④</div>
+        <div class="step-label">은행 eSLR (예정)</div>
+        <div class="step-title">2026.4.1 발효</div>
+        <div class="step-body">은행 Tier1 자본비율 계산에서 국채 제외 → 레버리지 부담 $219B 제거 → 은행이 T-Bill·장기채 흡수 주체로 등장.</div>
+        <div class="step-status"><span class="tag tag-blue">4월 후 $2~3T 여력 추가</span></div>
+      </div>
+    </div>
+
+    <div class="alert green" style="margin-top:8px;">
+      <div class="alert-icon">✅</div>
+      <div><strong>결론:</strong> 단기채 발행 시 재무부는 금리 부담이 없다. ON RRP가 소진된 지금, 연준 QE(월 $40B)가 주력 엔진이다. 4월 eSLR이 완성되면 은행이 4번째 흡수 주체로 합류한다. <strong>이 구조가 완성될 때까지 T-Bill 시장은 재무부에게 안전지대다.</strong></div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- V -->
+  <div class="section" id="sec5">
+    <div class="section-header">
+      <div class="section-num">V</div>
+      <div class="section-title">
+        수익률 곡선
+        <small>H.15 / 2026.2.25 종가 기준</small>
+      </div>
+    </div>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>종목</th>
+          <th>현행 금리 (2026.2.25)</th>
+          <th>1개월 전 (2026.1.25)</th>
+          <th>3개월 전 (2025.11.25)</th>
+          <th>1년 전 (2025.2.25)</th>
+          <th>방향</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>FOMC 목표</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold);">3.50~3.75%</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">3.50~3.75%</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">3.50~3.75%</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">4.25~4.50%</td>
+          <td>동결</td>
+        </tr>
+        <tr>
+          <td>4주 T-Bill ★</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold);">3.69%</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">~4.28%</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">~4.39%</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">~5.30%</td>
+          <td style="color:#6ed99a;">▼ (FOMC 인하 반영)</td>
+        </tr>
+        <tr>
+          <td>13주 T-Bill</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold);">~3.85%</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">~4.28%</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">~4.45%</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">~5.35%</td>
+          <td style="color:#6ed99a;">▼</td>
+        </tr>
+        <tr>
+          <td>2년물</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold);">~3.48%</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">~4.20%</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">~4.25%</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">~4.67%</td>
+          <td style="color:#6ed99a;">▼</td>
+        </tr>
+        <tr>
+          <td>5년물</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold);">~3.79%</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">~4.44%</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">~4.35%</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">~4.43%</td>
+          <td style="color:#6ed99a;">▼</td>
+        </tr>
+        <tr class="highlight">
+          <td>10년물 ★★</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold-light);font-weight:700;">4.05%</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">~4.62%</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">~4.42%</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">~4.68%</td>
+          <td style="color:#6ed99a;">▼ -57bp/1개월</td>
+        </tr>
+        <tr>
+          <td>20년물</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold);">~4.56%</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">~4.90%</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">~4.77%</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">~4.89%</td>
+          <td style="color:#6ed99a;">▼</td>
+        </tr>
+        <tr class="highlight">
+          <td>30년물 ★★</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold-light);font-weight:700;">4.72%</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">~4.90%</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">~4.73%</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">~4.88%</td>
+          <td style="color:#6ed99a;">▼</td>
+        </tr>
+        <tr>
+          <td>10-2 스프레드</td>
+          <td style="font-family:'DM Mono',monospace;color:#6ed99a;font-weight:700;">+60bp</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">+42bp</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">+17bp</td>
+          <td style="font-family:'DM Mono',monospace;color:#ff8a7a;">역전 (-100bp)</td>
+          <td style="color:#6ed99a;">▲ 정상화 진행</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="prose" style="font-size:11.5px;color:var(--text-muted);">* 출처: H.15 (Feb 25, 2026), TradingEconomics.com, FRED T10Y2Y, AdvisorPerspectives. 30yr: Feb 20 기준.</p>
+    <p class="prose" style="font-size:11.5px;color:var(--text-muted);">★★ = 장기채 (지정학 수요 조작 대상). ★ = 단기채 (연준 QE+RRP로 금리 고정 구간).</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- VI -->
+  <div class="section" id="sec6">
+    <div class="section-header">
+      <div class="section-num">VI</div>
+      <div class="section-title">
+        2026년 월별 롤오버 & QRA 신규 발행
+        <small>6-1. 월별 국채 만기 규모</small>
+      </div>
+    </div>
+
+    <table class="data-table" style="font-size:12px;">
+      <thead>
+        <tr>
+          <th>월</th>
+          <th>T-Bill 합</th>
+          <th>2yr Note</th>
+          <th>5yr Note</th>
+          <th>7yr Note</th>
+          <th>10yr Note</th>
+          <th>20yr Bond</th>
+          <th>30yr Bond</th>
+          <th>기타</th>
+          <th>월 합계</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>1월</td><td style="font-family:'DM Mono',monospace;">~$380B</td><td style="font-family:'DM Mono',monospace;">$110B</td><td style="font-family:'DM Mono',monospace;">$45B</td><td style="font-family:'DM Mono',monospace;">—</td><td style="font-family:'DM Mono',monospace;">$38B</td><td style="font-family:'DM Mono',monospace;">—</td><td style="font-family:'DM Mono',monospace;">$12B</td><td style="font-family:'DM Mono',monospace;">$36B</td><td style="font-family:'DM Mono',monospace;">~$680B</td></tr>
+        <tr class="highlight"><td>2월 ★★</td><td style="font-family:'DM Mono',monospace;">~$360B</td><td style="font-family:'DM Mono',monospace;">$115B</td><td style="font-family:'DM Mono',monospace;">$48B</td><td style="font-family:'DM Mono',monospace;">$23B</td><td style="font-family:'DM Mono',monospace;">$42B</td><td style="font-family:'DM Mono',monospace;">—</td><td style="font-family:'DM Mono',monospace;">$25B</td><td style="font-family:'DM Mono',monospace;">$42B</td><td style="font-family:'DM Mono',monospace;color:var(--gold-light);font-weight:700;">~$690B</td></tr>
+        <tr><td>3월</td><td style="font-family:'DM Mono',monospace;">~$390B</td><td style="font-family:'DM Mono',monospace;">$85B</td><td style="font-family:'DM Mono',monospace;">$40B</td><td style="font-family:'DM Mono',monospace;">—</td><td style="font-family:'DM Mono',monospace;">$35B</td><td style="font-family:'DM Mono',monospace;">—</td><td style="font-family:'DM Mono',monospace;">$8B</td><td style="font-family:'DM Mono',monospace;">$33B</td><td style="font-family:'DM Mono',monospace;">~$643B</td></tr>
+        <tr><td>4월</td><td style="font-family:'DM Mono',monospace;">~$380B</td><td style="font-family:'DM Mono',monospace;">$95B</td><td style="font-family:'DM Mono',monospace;">$42B</td><td style="font-family:'DM Mono',monospace;">—</td><td style="font-family:'DM Mono',monospace;">$37B</td><td style="font-family:'DM Mono',monospace;">—</td><td style="font-family:'DM Mono',monospace;">$9B</td><td style="font-family:'DM Mono',monospace;">$34B</td><td style="font-family:'DM Mono',monospace;">~$650B</td></tr>
+        <tr><td>5월</td><td style="font-family:'DM Mono',monospace;">~$390B</td><td style="font-family:'DM Mono',monospace;">$90B</td><td style="font-family:'DM Mono',monospace;">$43B</td><td style="font-family:'DM Mono',monospace;">—</td><td style="font-family:'DM Mono',monospace;">$37B</td><td style="font-family:'DM Mono',monospace;">—</td><td style="font-family:'DM Mono',monospace;">$9B</td><td style="font-family:'DM Mono',monospace;">$35B</td><td style="font-family:'DM Mono',monospace;">~$657B</td></tr>
+        <tr><td>6월</td><td style="font-family:'DM Mono',monospace;">~$380B</td><td style="font-family:'DM Mono',monospace;">$100B</td><td style="font-family:'DM Mono',monospace;">$44B</td><td style="font-family:'DM Mono',monospace;">—</td><td style="font-family:'DM Mono',monospace;">$38B</td><td style="font-family:'DM Mono',monospace;">—</td><td style="font-family:'DM Mono',monospace;">$10B</td><td style="font-family:'DM Mono',monospace;">$35B</td><td style="font-family:'DM Mono',monospace;">~$664B</td></tr>
+        <tr><td>7월</td><td style="font-family:'DM Mono',monospace;">~$385B</td><td style="font-family:'DM Mono',monospace;">$105B</td><td style="font-family:'DM Mono',monospace;">$44B</td><td style="font-family:'DM Mono',monospace;">—</td><td style="font-family:'DM Mono',monospace;">$38B</td><td style="font-family:'DM Mono',monospace;">—</td><td style="font-family:'DM Mono',monospace;">$10B</td><td style="font-family:'DM Mono',monospace;">$35B</td><td style="font-family:'DM Mono',monospace;">~$674B</td></tr>
+        <tr class="highlight"><td>8월 ★★</td><td style="font-family:'DM Mono',monospace;">~$390B</td><td style="font-family:'DM Mono',monospace;">$120B</td><td style="font-family:'DM Mono',monospace;">$44B</td><td style="font-family:'DM Mono',monospace;">—</td><td style="font-family:'DM Mono',monospace;">$38B</td><td style="font-family:'DM Mono',monospace;">—</td><td style="font-family:'DM Mono',monospace;">$10B</td><td style="font-family:'DM Mono',monospace;">$35B</td><td style="font-family:'DM Mono',monospace;color:var(--gold-light);font-weight:700;">~$694B</td></tr>
+        <tr><td>9월</td><td style="font-family:'DM Mono',monospace;">~$380B</td><td style="font-family:'DM Mono',monospace;">$80B</td><td style="font-family:'DM Mono',monospace;">$40B</td><td style="font-family:'DM Mono',monospace;">—</td><td style="font-family:'DM Mono',monospace;">$35B</td><td style="font-family:'DM Mono',monospace;">—</td><td style="font-family:'DM Mono',monospace;">$8B</td><td style="font-family:'DM Mono',monospace;">$33B</td><td style="font-family:'DM Mono',monospace;">~$626B</td></tr>
+        <tr><td>10월</td><td style="font-family:'DM Mono',monospace;">~$385B</td><td style="font-family:'DM Mono',monospace;">$90B</td><td style="font-family:'DM Mono',monospace;">$42B</td><td style="font-family:'DM Mono',monospace;">—</td><td style="font-family:'DM Mono',monospace;">$36B</td><td style="font-family:'DM Mono',monospace;">—</td><td style="font-family:'DM Mono',monospace;">$9B</td><td style="font-family:'DM Mono',monospace;">$34B</td><td style="font-family:'DM Mono',monospace;">~$649B</td></tr>
+        <tr class="highlight"><td>11월 ★★</td><td style="font-family:'DM Mono',monospace;">~$385B</td><td style="font-family:'DM Mono',monospace;">$110B</td><td style="font-family:'DM Mono',monospace;">$44B</td><td style="font-family:'DM Mono',monospace;">—</td><td style="font-family:'DM Mono',monospace;">$38B</td><td style="font-family:'DM Mono',monospace;">—</td><td style="font-family:'DM Mono',monospace;">$10B</td><td style="font-family:'DM Mono',monospace;">$35B</td><td style="font-family:'DM Mono',monospace;color:var(--gold-light);font-weight:700;">~$679B</td></tr>
+        <tr><td>12월</td><td style="font-family:'DM Mono',monospace;">~$380B</td><td style="font-family:'DM Mono',monospace;">$75B</td><td style="font-family:'DM Mono',monospace;">$40B</td><td style="font-family:'DM Mono',monospace;">—</td><td style="font-family:'DM Mono',monospace;">$34B</td><td style="font-family:'DM Mono',monospace;">—</td><td style="font-family:'DM Mono',monospace;">$8B</td><td style="font-family:'DM Mono',monospace;">$31B</td><td style="font-family:'DM Mono',monospace;">~$618B</td></tr>
+        <tr style="border-top:2px solid var(--line);">
+          <td>★ 연간</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold);">~$4.6T</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold);">~$1.18T</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold);">~$516B</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold);">~$237B (연간)</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold);">~$436B</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-muted);">—</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold);">~$128B</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold);">~$408B</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold-light);font-weight:700;">~$7.9T</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="prose" style="font-size:11.5px;color:var(--text-muted);">★★ 고위험 월 (연중 최대 만기). T-Bill ~$4.6T 포함 연간 총 롤오버 ~$9.6T. 7yr은 2yr·5yr 만기와 중복 불포함.</p>
+
+    <p class="prose" style="margin-top:24px;font-size:13px;color:var(--text-muted);font-family:'DM Mono',monospace;">6-2. QRA 신규 발행 — 2026.2.4 동결 기준</p>
+    <table class="data-table" style="margin-top:10px;font-size:12px;">
+      <thead>
+        <tr><th>종목</th><th>Feb</th><th>Mar</th><th>Apr</th><th>May</th><th>Jun~Sep</th><th>Oct~Dec</th><th>현행 발행금리</th><th>비고</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>2yr Note</td><td style="font-family:'DM Mono',monospace;">$69B</td><td style="font-family:'DM Mono',monospace;">$69B</td><td style="font-family:'DM Mono',monospace;">$69B</td><td style="font-family:'DM Mono',monospace;">$69B</td><td style="font-family:'DM Mono',monospace;">$69B</td><td style="font-family:'DM Mono',monospace;">$69B</td><td style="font-family:'DM Mono',monospace;color:var(--gold);">~3.48%</td><td>매월</td></tr>
+        <tr><td>3yr Note</td><td style="font-family:'DM Mono',monospace;">$58B</td><td style="font-family:'DM Mono',monospace;">$58B</td><td style="font-family:'DM Mono',monospace;">$58B</td><td style="font-family:'DM Mono',monospace;">$58B</td><td style="font-family:'DM Mono',monospace;">$58B</td><td style="font-family:'DM Mono',monospace;">$58B</td><td style="font-family:'DM Mono',monospace;color:var(--gold);">~3.65%</td><td>매월</td></tr>
+        <tr><td>5yr Note ★</td><td style="font-family:'DM Mono',monospace;">$70B</td><td style="font-family:'DM Mono',monospace;">$70B</td><td style="font-family:'DM Mono',monospace;">$70B</td><td style="font-family:'DM Mono',monospace;">$70B</td><td style="font-family:'DM Mono',monospace;">$70B</td><td style="font-family:'DM Mono',monospace;">$70B</td><td style="font-family:'DM Mono',monospace;color:var(--gold);">3.79%</td><td>매월</td></tr>
+        <tr><td>7yr Note ★</td><td style="font-family:'DM Mono',monospace;">$44B</td><td style="font-family:'DM Mono',monospace;">$44B</td><td style="font-family:'DM Mono',monospace;">$44B</td><td style="font-family:'DM Mono',monospace;">$44B</td><td style="font-family:'DM Mono',monospace;">$44B</td><td style="font-family:'DM Mono',monospace;">$44B</td><td style="font-family:'DM Mono',monospace;color:var(--gold);">~4.00%</td><td>매월</td></tr>
+        <tr class="highlight"><td>10yr Note ★★</td><td style="font-family:'DM Mono',monospace;">$42B</td><td style="font-family:'DM Mono',monospace;">$42B</td><td style="font-family:'DM Mono',monospace;">$42B</td><td style="font-family:'DM Mono',monospace;">$39B</td><td style="font-family:'DM Mono',monospace;">$39B</td><td style="font-family:'DM Mono',monospace;">$39~42B</td><td style="font-family:'DM Mono',monospace;color:var(--gold-light);font-weight:700;">4.05%</td><td>QRA 분기 조정</td></tr>
+        <tr class="highlight"><td>20yr Bond ★★</td><td style="font-family:'DM Mono',monospace;">$16B</td><td style="font-family:'DM Mono',monospace;">$16B</td><td style="font-family:'DM Mono',monospace;">$16B</td><td style="font-family:'DM Mono',monospace;">$16B</td><td style="font-family:'DM Mono',monospace;">$16B</td><td style="font-family:'DM Mono',monospace;">$16B</td><td style="font-family:'DM Mono',monospace;color:var(--gold-light);font-weight:700;">~4.56%</td><td>매월</td></tr>
+        <tr class="highlight"><td>30yr Bond ★★</td><td style="font-family:'DM Mono',monospace;">$25B</td><td style="font-family:'DM Mono',monospace;">$25B</td><td style="font-family:'DM Mono',monospace;">$25B</td><td style="font-family:'DM Mono',monospace;">$25B</td><td style="font-family:'DM Mono',monospace;">$25B</td><td style="font-family:'DM Mono',monospace;">$25B</td><td style="font-family:'DM Mono',monospace;color:var(--gold-light);font-weight:700;">4.72%</td><td>QRA 분기 조정</td></tr>
+        <tr><td>2yr FRN</td><td style="font-family:'DM Mono',monospace;">$28B</td><td style="font-family:'DM Mono',monospace;">$28B</td><td style="font-family:'DM Mono',monospace;">$28B</td><td style="font-family:'DM Mono',monospace;">$28B</td><td style="font-family:'DM Mono',monospace;">$28B</td><td style="font-family:'DM Mono',monospace;">$28B</td><td style="font-family:'DM Mono',monospace;color:var(--gold);">SOFR+</td><td>매월</td></tr>
+        <tr style="border-top:2px solid var(--line);">
+          <td>★ 월 합계</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold);font-weight:700;">$352B</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold);">$352B</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold);">$352B</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold);">$349B</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold);">$349B</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold);">$349~352B</td>
+          <td>—</td><td>동결 기준</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="prose" style="font-size:11.5px;color:var(--text-muted);">★★ = 시장 금리 결정 장기채 (지정학 수요 조작 대상). 5yr/7yr 입찰 2026.2.25-26 진행 중.</p>
+    <p class="prose" style="font-size:11.5px;color:var(--text-muted);">* 출처: QRA Feb 4, 2026 / TreasuryDirect 공식 입찰 일정 PDF (Feb 4, 2026).</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- VII -->
+  <div class="section" id="sec7">
+    <div class="section-header">
+      <div class="section-num">VII</div>
+      <div class="section-title">
+        장기채 롤오버 이자비용 손실 분석
+        <small>7-1. 빈티지별 금리 스프레드 — 2026.2.25 금리 기준</small>
+      </div>
+    </div>
+
+    <p class="prose">2020~2022년 초저금리 시대에 발행된 장기채가 2026년 만기를 맞이하여 현행 금리로 롤오버된다. 이 금리 차이가 재무부의 추가 이자 부담이다.</p>
+
+    <table class="data-table" style="margin-top:16px;">
+      <thead>
+        <tr><th>종목</th><th>발행 연도</th><th>당시 쿠폰</th><th>현행 금리 (2026.2.25)</th><th>Δbp</th><th>추가 연간 이자부담</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>5yr Note</td><td>2021.2</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">0.500%</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold);">3.79%</td>
+          <td style="font-family:'DM Mono',monospace;color:#ff8a7a;">+329bp</td>
+          <td style="font-family:'DM Mono',monospace;color:#ff8a7a;font-weight:600;">+$2.30B/yr<br><span style="font-size:11px;opacity:.7;">($70B × 3.29%)</span></td>
+        </tr>
+        <tr>
+          <td>7yr Note</td><td>2019.2</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">2.500%</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold);">~4.00%</td>
+          <td style="font-family:'DM Mono',monospace;color:#ff8a7a;">+150bp</td>
+          <td style="font-family:'DM Mono',monospace;color:#ff8a7a;font-weight:600;">+$0.66B/yr<br><span style="font-size:11px;opacity:.7;">($44B × 1.50%)</span></td>
+        </tr>
+        <tr>
+          <td>7yr Note</td><td>2021.2</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">1.125%</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold);">~4.00%</td>
+          <td style="font-family:'DM Mono',monospace;color:#ff8a7a;">+288bp</td>
+          <td style="font-family:'DM Mono',monospace;color:#ff8a7a;font-weight:600;">+$1.27B/yr<br><span style="font-size:11px;opacity:.7;">($44B × 2.88%)</span></td>
+        </tr>
+        <tr class="highlight">
+          <td>10yr Note</td><td>2021.2</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">1.125%</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold-light);font-weight:700;">4.05%</td>
+          <td style="font-family:'DM Mono',monospace;color:#ff8a7a;font-weight:700;">+293bp ★</td>
+          <td style="font-family:'DM Mono',monospace;color:#ff8a7a;font-weight:700;">+$1.23B/yr<br><span style="font-size:11px;opacity:.7;">($42B × 2.93%)</span></td>
+        </tr>
+        <tr>
+          <td>10yr Note</td><td>2016.2</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">1.625%</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold-light);">4.05%</td>
+          <td style="font-family:'DM Mono',monospace;color:#ff8a7a;">+243bp</td>
+          <td style="font-family:'DM Mono',monospace;color:#ff8a7a;font-weight:600;">+$1.02B/yr<br><span style="font-size:11px;opacity:.7;">($42B × 2.43%)</span></td>
+        </tr>
+        <tr>
+          <td>20yr Bond</td><td>2021.2</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">1.875%</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold);">~4.56%</td>
+          <td style="font-family:'DM Mono',monospace;color:#ff8a7a;">+268bp</td>
+          <td style="font-family:'DM Mono',monospace;color:#ff8a7a;font-weight:600;">+$0.43B/yr<br><span style="font-size:11px;opacity:.7;">($16B × 2.68%)</span></td>
+        </tr>
+        <tr>
+          <td>30yr Bond</td><td>1996.2</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">6.000%</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold);">4.72%</td>
+          <td style="font-family:'DM Mono',monospace;color:#6ed99a;">-128bp</td>
+          <td style="font-family:'DM Mono',monospace;color:#6ed99a;font-weight:600;">-$0.32B/yr ▼ 절감<br><span style="font-size:11px;opacity:.7;">($25B × -1.28%)</span></td>
+        </tr>
+        <tr class="highlight">
+          <td>30yr Bond</td><td>2021.2</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text-dim);">1.875%</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold-light);font-weight:700;">4.72%</td>
+          <td style="font-family:'DM Mono',monospace;color:#ff8a7a;font-weight:700;">+285bp ★</td>
+          <td style="font-family:'DM Mono',monospace;color:#ff8a7a;font-weight:700;">+$0.71B/yr<br><span style="font-size:11px;opacity:.7;">($25B × 2.85%)</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="prose" style="font-size:11.5px;color:var(--text-muted);">* 2026.2.25 기준: 5yr 3.79%, 10yr 4.05%, 20yr ~4.56%, 30yr 4.72% (H.15/TradingEconomics).</p>
+    <p class="prose" style="font-size:11.5px;color:var(--text-muted);">* 1bp 절감 = $4.9T × 0.01% = $490M/yr. 10bp = $4.9B/yr. 100bp = $49B/yr.</p>
+
+    <p class="prose" style="margin-top:24px;font-size:13px;color:var(--text-muted);font-family:'DM Mono',monospace;">7-2. 시나리오별 총 추가 이자부담</p>
+    <table class="data-table" style="margin-top:10px;">
+      <thead>
+        <tr><th>시나리오</th><th>가중평균 스프레드</th><th>롤오버 대상</th><th>추가 이자부담</th><th>비고</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>보수적</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text);">+120bp</td>
+          <td style="font-family:'DM Mono',monospace;">$4.9T 쿠폰채</td>
+          <td style="font-family:'DM Mono',monospace;color:#f0a965;font-weight:600;">+$58.8B/yr</td>
+          <td>FOMC 인하 효과 최대 반영</td>
+        </tr>
+        <tr>
+          <td>기본 (Base)</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text);">+175bp</td>
+          <td style="font-family:'DM Mono',monospace;">$4.9T</td>
+          <td style="font-family:'DM Mono',monospace;color:#ff8a7a;font-weight:600;">+$85.8B/yr</td>
+          <td>2월 실제금리 반영</td>
+        </tr>
+        <tr class="highlight">
+          <td>★ 현실 추정</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold-light);font-weight:700;">+195bp</td>
+          <td style="font-family:'DM Mono',monospace;">$4.9T</td>
+          <td style="font-family:'DM Mono',monospace;color:#ff8a7a;font-weight:700;">+$95.6B/yr</td>
+          <td><strong style="color:var(--gold);">채택값</strong></td>
+        </tr>
+        <tr>
+          <td>최대 추정</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--text);">+250bp</td>
+          <td style="font-family:'DM Mono',monospace;">$4.9T</td>
+          <td style="font-family:'DM Mono',monospace;color:#ff8a7a;font-weight:600;">+$122.5B/yr</td>
+          <td>금리 반등 시</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr class="divider">
+
+  <!-- VIII -->
+  <div class="section" id="sec8">
+    <div class="section-header">
+      <div class="section-num">VIII</div>
+      <div class="section-title">
+        지정학 → 장기채 금리 타임라인
+        <small>2026.1~2 · 39일 시퀀스 · -72bp</small>
+      </div>
+    </div>
+
+    <p class="prose">단기채 금리는 연준이 고정한다. 장기채 금리는 시장이 결정한다. 재무부가 사용하는 수단은 글로벌 안전자산 수요 자극이다. 아래 시퀀스가 그 구조다.</p>
+
+    <div class="timeline" style="margin-top:24px;">
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-era">2026.1.9</div>
+        <div class="tl-title">CENTCOM 24시간 전쟁 태세 명령</div>
+        <div class="tl-body">US10Y: <strong>4.77%</strong> &nbsp;|&nbsp; US30Y: <strong>4.97%</strong> &nbsp;|&nbsp; 기준선. 금리 고점 구간.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-era">2026.1.15</div>
+        <div class="tl-title">USS Abraham Lincoln CSG 중동 파견</div>
+        <div class="tl-body">US10Y: <strong>4.61%</strong> &nbsp;|&nbsp; US30Y: <strong>4.83%</strong> &nbsp;|&nbsp; <span style="color:#ff8a7a;">-16bp</span> 급락. 안전자산 수요 첫 반응.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-era">2026.1.26</div>
+        <div class="tl-title">Lincoln CSG 오만만 도착 (2011년 이후 첫 걸프만 진입)</div>
+        <div class="tl-body">US10Y: <strong>4.53%</strong> &nbsp;|&nbsp; US30Y: <strong>4.78%</strong> &nbsp;|&nbsp; <span style="color:#ff8a7a;">-8bp</span> 추가. 2yr 입찰 BTC 2.62 기록.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-era">2026.2.3</div>
+        <div class="tl-title">F-35C 이란 드론 격추. IRGC 함정 대치.</div>
+        <div class="tl-body">US10Y: <strong>4.41%</strong> &nbsp;|&nbsp; US30Y: <strong>4.69%</strong> &nbsp;|&nbsp; <span style="color:#ff8a7a;">-12bp</span> 추가. 3/10/30yr 입찰 직전.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot key"></div>
+        <div class="tl-era">★ 2026.2.4</div>
+        <div class="tl-title">★ QRA 발표: 10yr $42B / 30yr $25B 입찰 공고.</div>
+        <div class="tl-body">US10Y: <strong>4.34%</strong> &nbsp;|&nbsp; US30Y: <strong>4.62%</strong> &nbsp;|&nbsp; 입찰 성공. <strong>군사 압박과 입찰 스케줄 정렬.</strong></div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-era">2026.2.13</div>
+        <div class="tl-title">USS Gerald Ford CSG 중동 파견 + CPI 0.3% MoM 냉각.</div>
+        <div class="tl-body">US10Y: <strong>4.06%</strong> &nbsp;|&nbsp; US30Y: <strong>4.55%</strong> &nbsp;|&nbsp; <span style="color:#ff8a7a;">-28bp.</span> CPI 동반 발생으로 순수 지정학 효과 분리 불가.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot gold"></div>
+        <div class="tl-era">★ 2026.2.25-26</div>
+        <div class="tl-title">★ 5yr $70B / 7yr $44B 입찰. F-22 Raptor 12기 이스라엘 배치.</div>
+        <div class="tl-body">US10Y: <strong>4.05%</strong> &nbsp;|&nbsp; US30Y: <strong>~4.72%</strong> &nbsp;|&nbsp; 입찰 진행 중. 결과 관찰 필요.</div>
+      </div>
+    </div>
+
+    <div class="alert gold" style="margin-top:16px;">
+      <div class="alert-icon">📊</div>
+      <div>
+        <strong>합계 (1.9~2.25) — 지정학 이벤트 시퀀스 39일:</strong><br>
+        US10Y: ▼ <strong>-72bp</strong> &nbsp;|&nbsp; US30Y: ▼ <strong>-25bp</strong><br>
+        10yr: $72bp × $490M = <strong>+$3.53B/yr 절감</strong> (2월 발행분 기준)<br><br>
+        * 2/13 -28bp는 CPI 냉각(0.3% MoM) 동시 발생. 순수 지정학 효과 보수 추정: -10~15bp (10yr).<br>
+        ★ QRA 발표일과 군사 이벤트 타이밍이 입찰 스케줄과 정밀하게 정렬됨.
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- IX -->
+  <div class="section" id="sec9">
+    <div class="section-header">
+      <div class="section-num">IX</div>
+      <div class="section-title">
+        핵심 판단 — 롱맨의 3문장
+      </div>
+    </div>
+
+    <div class="judgement-box">
+      <div class="judgement-eyebrow">롱맨의 최종 판단 / Longman's 3 Statements</div>
+      <div class="judgement-title">지금 유동성 구조에 대한 세 가지 결론</div>
+
+      <div class="judgement-item">
+        <div class="judgement-num">①</div>
+        <div class="judgement-content">
+          <div class="j-title">QT는 끝났고 QE가 시작됐다.</div>
+          <div class="j-body">2025.12.1 QT 종료 → 2025.12.10 QE 재개(월 $40B). 순유동성 -$145B는 QT의 잔재다. <strong>QE 누적과 eSLR(4월)이 방향을 바꿀 것이다.</strong></div>
+        </div>
+      </div>
+
+      <div class="judgement-item">
+        <div class="judgement-num">②</div>
+        <div class="judgement-content">
+          <div class="j-title">실질 ON RRP는 $1.0B — 유동성 방출 엔진 완전 소진.</div>
+          <div class="j-body">외국계 $319.6B는 달러 패권의 구조적 잔액으로 유동성 변수가 아니다. <strong>지금 T-Bill 지지 엔진은 연준 QE(월 $40B) 하나다.</strong></div>
+        </div>
+      </div>
+
+      <div class="judgement-item">
+        <div class="judgement-num">③</div>
+        <div class="judgement-content">
+          <div class="j-title">장기채는 지정학이 결정한다.</div>
+          <div class="j-body">1.9~2.26 기간 10yr -72bp. 2월 발행분 절감 $3.53B/yr. <strong>다음 관문: 8월($694B), 11월($679B). 그 전 새로운 이벤트 설계가 필요하다.</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- 한계 & 출처 -->
+  <div class="section" id="sec10">
+    <div class="section-header">
+      <div class="section-num">⚠</div>
+      <div class="section-title">
+        보고서의 한계 & 출처
+      </div>
+    </div>
+
+    <div class="limit-grid">
+      <div class="limit-card">
+        <div class="limit-claim">2/13 -28bp: 지정학 효과</div>
+        <div class="limit-density"><span class="tag tag-gold">증거 밀도: 중간 (CPI 동시)</span></div>
+        <div class="limit-body">CPI 냉각(0.3% MoM) 동시 발생. 순수 이란 효과 분리 불가.</div>
+      </div>
+      <div class="limit-card">
+        <div class="limit-claim">재무부-국방부 입찰 타이밍 조율</div>
+        <div class="limit-density"><span class="tag tag-gray">증거 밀도: 낮음 (정황 증거)</span></div>
+        <div class="limit-body">공식 문서상 독립 결정. 타이밍 상관관계가 인과관계를 증명하지 않음.</div>
+      </div>
+      <div class="limit-card">
+        <div class="limit-claim">eSLR 흡수 $2~3T 규모</div>
+        <div class="limit-density"><span class="tag tag-gold">증거 밀도: 중간 (4월 미시행)</span></div>
+        <div class="limit-body">4월 시행 전 실제 흡수량 미확정. 은행별 대차대조표 상황에 따라 편차.</div>
+      </div>
+      <div class="limit-card">
+        <div class="limit-claim">+$95.6B/yr 이자부담 추정</div>
+        <div class="limit-density"><span class="tag tag-gold">증거 밀도: 중간 (빈티지 가정)</span></div>
+        <div class="limit-body">빈티지 구성에 따라 ±$25B 오차 가능. 세입 증가로 일부 상쇄 가능.</div>
+      </div>
+    </div>
+
+    <div class="alert blue" style="margin-top:24px;">
+      <div class="alert-icon">📚</div>
+      <div>
+        <strong>출처 목록</strong>
+        <div class="source-list">
+          H.4.1: Federal Reserve Statistical Release, 2026.2.19 발표 (기준일 2026.2.11)<br>
+          H.15: Selected Interest Rates, 2026.2.25 | FRED: T10Y2Y, DGS30, RRPONTSYD<br>
+          TradingEconomics.com | AdvisorPerspectives.com (Feb 20, 2026)<br>
+          QRA: U.S. Treasury Quarterly Refunding Feb 4, 2026 | TreasuryDirect Auction Schedule PDF<br>
+          NY Fed: Statement Regarding Reserve Management Purchases, Dec 10, 2025<br>
+          KPMG (2025.11.18) | SVB AM | Daily Economy (2025.12.16) | Brookings (2026.1.8)<br>
+          JEC Senate Monthly Debt Update Feb 2026 | CBO FY2026 Outlook | MSPD January 2026
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:24px;background:linear-gradient(135deg,#0f0a05,#120808);border:1px solid rgba(196,163,90,.2);border-radius:6px;padding:28px 32px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+        <div style="font-size:13px;color:var(--text-muted);line-height:1.7;">
+          <strong style="color:var(--gold);display:block;font-size:15px;margin-bottom:4px;">롱맨 | 매크로렌즈</strong>
+          FROM: LONGMAN (롱맨의 매크로렌즈) &nbsp;|&nbsp; TO: 구독자 &nbsp;|&nbsp; 2026.02.26<br>
+          ⚠ 본 보고서는 공개 데이터 기반 독립 분석입니다. 투자 추천이 아닙니다. 무단 복제·배포 금지.
+        </div>
+        <a href="https://contents.premium.naver.com/longman/longman1"
+           target="_blank"
+           style="display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:#0a0800;padding:12px 26px;border-radius:4px;font-weight:700;font-size:14px;text-decoration:none;letter-spacing:.3px;white-space:nowrap;"
+           onmouseover="this.style.background='#e0c07a'"
+           onmouseout="this.style.background='#C4A35A'">
+          구독하기 →
+        </a>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div><strong style="color:var(--gold);">롱맨 | 매크로렌즈 — 미국 국채 전략적 롤오버 & 연준 유동성 메커니즘 분석</strong> &nbsp;·&nbsp; <a href="https://naver.me/FZoeikYV">naver.me/FZoeikYV</a></div>
+  <div style="margin-top:6px;">FISCAL YEAR 2026 &nbsp;·&nbsp; 2026.02.26 &nbsp;·&nbsp; 본 보고서는 공개 데이터 기반 독립 분석입니다. 투자 추천이 아닙니다.</div>
+</footer>
+
+<script>
+  const tabs = document.querySelectorAll('.nav-tab');
+  const sections = document.querySelectorAll('.section[id]');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        tabs.forEach(t => t.classList.remove('active'));
+        const a = document.querySelector(`.nav-tab[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => observer.observe(s));
+  tabs.forEach(t => t.addEventListener('click', e => {
+    e.preventDefault();
+    document.querySelector(t.getAttribute('href'))?.scrollIntoView({ behavior: 'smooth' });
+  }));
+</script>
+</body>
+</html>
